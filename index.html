@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP MEI - Gestão Integrada v2</title>
+    
+    <!-- ==========================================
+         SEÇÃO 1: ESTILIZAÇÃO (CSS) - UX/UI PREMIUM
+         ========================================== -->
+    <style>
+        :root {
+            --bg-sistema: #111827;
+            --bg-app: #f9fafb;
+            --card-cor: #ffffff;
+            --texto-p: #1f2937;
+            --texto-s: #4b5563;
+            --cor-primaria: #2563eb;
+            --cor-sucesso: #10b981;
+            --cor-erro: #ef4444;
+            --cor-alerta: #f59e0b;
+            --borda: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-sistema);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* Container Mobile-First Centralizado */
+        .app-container {
+            width: 100%;
+            max-width: 430px;
+            background-color: var(--bg-app);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding-bottom: 75px; /* Espaço para a barra inferior */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Telas (Ocultas por padrão, controladas por JS) */
+        .tela {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tela.ativa {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Componentes de Login / Cadastro */
+        .auth-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 30px;
+            background: white;
+        }
+
+        .auth-logo {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* Header do App (Home) */
+        .app-header {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid var(--borda);
+            margin-bottom: 15px;
+        }
+
+        .loja-nome-topo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--texto-p);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .loja-logo-centro {
+            width: 90px;
+            height: 90px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 3px solid var(--cor-primaria);
+            overflow: hidden;
+        }
+
+        .loja-logo-centro img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Cards, Grupos e Forms */
+        .card {
+            background: var(--card-cor);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--borda);
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .titulo-secao {
+            font-size: 1.1rem;
+            color: var(--texto-p);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--texto-s);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: #fafdff;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--cor-primaria);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Botões */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-p { background: var(--cor-primaria); color: white; }
+        .btn-p:hover { background: #1d4ed8; }
+        .btn-s { background: #e0e7ff; color: var(--cor-primaria); }
+        .btn-vazado { background: transparent; border: 1px solid var(--cor-primaria); color: var(--cor-primaria); }
+        .btn-link { background: none; color: var(--cor-primaria); font-size: 0.85rem; padding: 5px; }
+
+        /* Lista de Itens (Estoque/Extrato) */
+        .item-lista {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--borda);
+        }
+
+        .item-lista:last-child { border-bottom: none; }
+
+        /* Controles de Quantidade no Estoque */
+        .controle-qtd {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 10px;
+        }
+
+        .btn-qtd {
+            background: #e2e8f0;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-qtd:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-lixeira {
+            background: none;
+            border: none;
+            color: var(--cor-erro);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Grid Financeiro */
+        .financas-resumo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mini-card {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--borda);
+            text-align: center;
+        }
+
+        .mini-card span { font-size: 0.75rem; color: var(--texto-s); text-transform: uppercase; }
+        .mini-card p { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
+
+        .lucro-positivo { color: var(--cor-sucesso); }
+        .lucro-negativo { color: var(--cor-erro); }
+
+        /* Barra de Navegação Inferior (Fixed) */
+        .nav-inferior {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 65px;
+            background: white;
+            border-top: 1px solid var(--borda);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--texto-s);
+            font-size: 0.7rem;
+            cursor: pointer;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .nav-item-icon {
+            font-size: 1.2rem;
+        }
+
+        .nav-item.ativo {
+            color: var(--cor-primaria);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- ==========================================
+             TELA: AUTENTICAÇÃO (LOGIN)
+             ========================================== -->
+        <section id="tela-login" class="tela ativa">
+            <div class="auth-container">
+                <div class="auth-logo">📦</div>
+                <h2 class="titulo-secao" style="text-align: center; margin-bottom: 25px;">Acesse seu ERP MEI</h2>
+                
+                <form id="form-login">
+                    <div class="form-group">
+                        <label>CPF ou CNPJ</label>
+                        <input type="text" id="login-id" class="form-control" placeholder="Apenas números" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Senha de Acesso</label>
+                        <input type="password" id="login-senha" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-p" style="margin-top: 15px;">Entrar no Sistema</button>
+                    <button type="button" class="btn btn-link" style="margin-top: 10px;" onclick="irPara('tela-cadastro')">Não tem conta? Cadastre sua Loja</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TELA: CADASTRO
+             ========================================== -->
+        <section id="tela-cadastro" class="tela">
+            <div class="auth-container" style="min-height: auto; padding: 20px 30px;">
+                <h2 class="titulo-secao" style="text-align: center;">Cadastrar Empresa</h2>
+                <form id="form-cadastro">
+                    <div class="form-group">
+                        <label>Nome da Loja</label>
+                        <input type="text" id="cad-nome" class="form-control" placeholder="Ex: Doce Sabor MEI" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CPF ou CNPJ</label>
+                        <input type="text" id="cad-id" class="form-control" placeholder="Apenas números" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Senha de Acesso</label>
+                        <input type="password" id="cad-senha" class="form-control" placeholder="Crie uma senha" required>
+                    </div>
+                    <button type="submit" class="btn btn-p" style="margin-top: 15px;">Criar Minha Conta</button>
+                    <button type="button" class="btn btn-link" style="margin-top: 10px;" onclick="irPara('tela-login')">Voltar para o Login</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TELA: HOME (PÁGINA INICIAL)
+             ========================================== -->
+        <section id="tela-home" class="tela">
+            <div class="app-header">
+                <div class="loja-nome-topo" id="home-loja-nome">Minha Loja</div>
+                <div class="loja-logo-centro" id="home-loja-logo">🏬</div>
+            </div>
+
+            <!-- Painel de Operações Rápidas -->
+            <div class="card">
+                <h3 class="titulo-secao" style="font-size:0.95rem; margin-bottom: 10px;">Lançamento Rápido</h3>
+                
+                <form id="form-operacao">
+                    <div class="form-group">
+                        <label>Tipo de Operação</label>
+                        <select id="op-tipo" class="form-control" onchange="alternarCamposOp()" required>
+                            <option value="venda">Nova Venda (Entrada)</option>
+                            <option value="compra">Compra de Materiais (Saída)</option>
+                        </select>
+                    </div>
+
+                    <!-- Input Dinâmico -->
+                    <div class="form-group" id="grupo-op-produto">
+                        <label>Selecione o Produto Vendido</label>
+                        <select id="op-produto-selecionado" class="form-control">
+                            <!-- Inserido via JS -->
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="grupo-op-descricao" style="display: none;">
+                        <label>Descrição do Material adquirido</label>
+                        <input type="text" id="op-descricao" class="form-control" placeholder="Ex: Tecido, Embalagens">
+                    </div>
+
+                    <div class="form-group">
+                        <label id="label-op-valor">Valor Total da Operação</label>
+                        <input type="number" id="op-valor" step="0.01" class="form-control" placeholder="R$ 0,00" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-p">Registrar Movimentação</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TELA: MINHA LOJA (DADOS CADASTRAIS)
+             ========================================== -->
+        <section id="tela-loja" class="tela">
+            <h2 class="titulo-secao">Dados da Loja</h2>
+            
+            <div class="card">
+                <form id="form-perfil">
+                    <div class="form-group">
+                        <label>Nome da Loja</label>
+                        <input type="text" id="perf-nome" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Endereço Físico / Operacional</label>
+                        <input type="text" id="perf-endereco" class="form-control" placeholder="Rua, Número, Bairro, Cidade" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contato Comercial (WhatsApp/Telefone)</label>
+                        <input type="text" id="perf-contato" class="form-control" placeholder="(00) 00000-0000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>URL da Imagem da Logo (Opcional)</label>
+                        <input type="url" id="perf-logo-url" class="form-control" placeholder="https://linkdaimagem.com/logo.jpg">
+                    </div>
+                    <button type="submit" class="btn btn-p">Salvar Alterações</button>
+                </form>
+            </div>
+
+            <!-- Compartilhamento de Dados -->
+            <div class="card" style="background: #eff6ff; border-color: #bfdbfe;">
+                <h3 class="titulo-secao" style="font-size:0.9rem; color: var(--cor-primaria);">Divulgação Expressa</h3>
+                <p style="font-size: 0.8rem; color: var(--texto-s); margin-bottom: 12px;">Gere um cartão virtual limpo com seus dados de endereço e contato para enviar para novos clientes.</p>
+                <button class="btn btn-vazado" onclick="compartilharDados()">🔗 Compartilhar Contato</button>
+            </div>
+
+            <button class="btn btn-link" style="color: var(--cor-erro); margin-top: 10px;" onclick="fazerLogout()">Sair do Sistema</button>
+        </section>
+
+        <!-- ==========================================
+             TELA: MEU ESTOQUE
+             ========================================== -->
+        <section id="tela-estoque" class="tela">
+            <h2 class="titulo-secao">Gerenciamento de Estoque</h2>
+            
+            <div class="card">
+                <h3 class="titulo-secao" style="font-size:0.9rem;">Cadastrar / Abastecer Produto</h3>
+                <form id="form-estoque">
+                    <div class="form-group">
+                        <label>Nome do Produto</label>
+                        <input type="text" id="est-nome" class="form-control" placeholder="Ex: Camiseta Básica" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Custo de Produção/Compra (R$)</label>
+                        <input type="number" id="est-custo" step="0.01" class="form-control" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor de Venda (R$)</label>
+                        <input type="number" id="est-venda" step="0.01" class="form-control" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade Inicial / A adicionar</label>
+                        <input type="number" id="est-qtd" class="form-control" value="1" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-p">Salvar no Estoque</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 class="titulo-secao" style="font-size:0.9rem; margin-bottom: 10px;">Produtos Cadastrados</h3>
+                <div id="lista-produtos-container">
+                    <!-- Gerado dinamicamente via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TELA: MINHAS FINANÇAS
+             ========================================== -->
+        <section id="tela-financas" class="tela">
+            <h2 class="titulo-secao">Painel Financeiro</h2>
+            
+            <div class="financas-resumo">
+                <div class="mini-card">
+                    <span>Entradas</span>
+                    <p id="fin-entradas" style="color: var(--cor-sucesso);">R$ 0,00</p>
+                </div>
+                <div class="mini-card">
+                    <span>Saídas</span>
+                    <p id="fin-saidas" style="color: var(--cor-erro);">R$ 0,00</p>
+                </div>
+            </div>
+            
+            <div class="card" id="card-lucro-container" style="text-align: center;">
+                <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--texto-s);">Lucro Líquido Real</span>
+                <p id="fin-lucro" style="font-size: 1.8rem; font-weight: 800; margin-top: 4px;">R$ 0,00</p>
+            </div>
+
+            <div class="card">
+                <h3 class="titulo-secao" style="font-size:0.9rem; margin-bottom: 10px;">Extrato de Transações</h3>
+                <div id="extrato-container">
+                    <!-- Gerado dinamicamente via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             NAVEGAÇÃO INFERIOR FIXA (BOTTOM NAV BAR)
+             ========================================== -->
+        <nav class="nav-inferior" id="barra-navegacao" style="display: none;">
+            <button class="nav-item ativo" onclick="navegarPara('tela-home', this)">
+                <span class="nav-item-icon">🏠</span>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" onclick="navegarPara('tela-estoque', this)">
+                <span class="nav-item-icon">📦</span>
+                <span>Estoque</span>
+            </button>
+            <button class="nav-item" onclick="navegarPara('tela-financas', this)">
+                <span class="nav-item-icon">💵</span>
+                <span>Finanças</span>
+            </button>
+            <button class="nav-item" onclick="navegarPara('tela-loja', this)">
+                <span class="nav-item-icon">🏬</span>
+                <span>Minha Loja</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- ==========================================
+         SEÇÃO 2: LÓGICA DE PROGRAMAÇÃO (JAVASCRIPT)
+         ========================================== -->
+    <script>
+        let dadosEmpresa = JSON.parse(localStorage.getItem('erp_mei_perfil')) || null;
+        let produtos = JSON.parse(localStorage.getItem('erp_mei_produtos')) || [];
+        let transacoes = JSON.parse(localStorage.getItem('erp_mei_transacoes')) || [];
+
+        function irPara(idTela) {
+            document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+            document.getElementById(idTela).classList.add('ativa');
+            
+            const barraNav = document.getElementById('barra-navegacao');
+            if(idTela === 'tela-login' || idTela === 'tela-cadastro') {
+                barraNav.style.display = 'none';
+            } else {
+                barraNav.style.display = 'flex';
+            }
+        }
+
+        function navegarPara(idTela, botaoClicado) {
+            irPara(idTela);
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('ativo'));
+            botaoClicado.classList.add('ativo');
+            
+            if(idTela === 'tela-home') renderizarHome();
+            if(idTela === 'tela-estoque') renderizarEstoque();
+            if(idTela === 'tela-financas') renderizarFinancas();
+        }
+
+        document.getElementById('form-cadastro').addEventListener('submit', function(e) {
+            e.preventDefault();
+            dadosEmpresa = {
+                nome: document.getElementById('cad-nome').value,
+                documento: document.getElementById('cad-id').value,
+                senha: document.getElementById('cad-senha').value,
+                endereco: 'Não informado',
+                contato: 'Não informado',
+                logoUrl: ''
+            };
+            localStorage.setItem('erp_mei_perfil', JSON.stringify(dadosEmpresa));
+            alert('Cadastro realizado! Efetue seu login para acessar.');
+            this.reset();
+            irPara('tela-login');
+        });
+
+        document.getElementById('form-login').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const idDigitado = document.getElementById('login-id').value;
+            const senhaDigitada = document.getElementById('login-senha').value;
+
+            if (dadosEmpresa && dadosEmpresa.documento === idDigitado && dadosEmpresa.senha === senhaDigitada) {
+                sincronizarPerfilForm();
+                irPara('tela-home');
+                renderizarHome();
+            } else {
+                alert('Documento (CPF/CNPJ) ou Senha incorretos ou não cadastrados.');
+            }
+        });
+
+        function fazerLogout() {
+            irPara('tela-login');
+            document.getElementById('form-login').reset();
+        }
+
+        // --- GERENCIAMENTO DE ESTOQUE ATUALIZADO (EVITA DUPLICIDADE E INCLUI QUANTIDADE) ---
+        document.getElementById('form-estoque').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nomeDigitado = document.getElementById('est-nome').value.trim();
+            const custoDigitado = parseFloat(document.getElementById('est-custo').value);
+            const vendaDigitado = parseFloat(document.getElementById('est-venda').value);
+            const qtdDigitada = parseInt(document.getElementById('est-qtd').value) || 1;
+
+            // Busca se o produto com o mesmo nome já existe no estoque (ignora maiúsculas/minúsculas)
+            const produtoExistente = produtos.find(p => p.nome.toLowerCase() === nomeDigitado.toLowerCase());
+
+            if (produtoExistente) {
+                // Se já existe, soma a nova quantidade e atualiza os custos/valores informados
+                produtoExistente.quantidade += qtdDigitada;
+                produtoExistente.custo = custoDigitado;
+                produtoExistente.venda = vendaDigitado;
+                alert(`Produto existente encontrado! Mais ${qtdDigitada} unidade(s) adicionada(s) ao saldo de "${produtoExistente.nome}".`);
+            } else {
+                // Se é novo, cria um registo do zero
+                const novoProd = {
+                    id: Date.now(),
+                    nome: nomeDigitado,
+                    custo: custoDigitado,
+                    venda: vendaDigitado,
+                    quantidade: qtdDigitada
+                };
+                produtos.push(novoProd);
+                alert('Novo produto adicionado ao estoque.');
+            }
+
+            localStorage.setItem('erp_mei_produtos', JSON.stringify(produtos));
+            this.reset();
+            document.getElementById('est-qtd').value = "1"; // reseta valor padrão
+            renderizarEstoque();
+        });
+
+        function renderizarEstoque() {
+            const container = document.getElementById('lista-produtos-container');
+            container.innerHTML = '';
+
+            if (produtos.length === 0) {
+                container.innerHTML = `<p style="font-size:0.85rem; color:var(--texto-s); text-align:center;">Nenhum produto cadastrado.</p>`;
+                return;
+            }
+
+            produtos.forEach(prod => {
+                const div = document.createElement('div');
+                div.className = 'item-lista';
+                div.innerHTML = `
+                    <div style="flex: 1; padding-right: 10px;">
+                        <strong>${prod.nome}</strong><br>
+                        <span style="font-size:0.75rem; color:var(--texto-s)">Custo: R$ ${prod.custo.toFixed(2)} | Venda: R$ ${prod.venda.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <div class="controle-qtd">
+                            <button class="btn-qtd" onclick="alterarQtdManual(${prod.id}, -1)">-</button>
+                            <span style="font-size: 0.9rem; font-weight: 600; min-width: 20px; text-align: center;">${prod.quantidade}</span>
+                            <button class="btn-qtd" onclick="alterarQtdManual(${prod.id}, 1)">+</button>
+                        </div>
+                        <button class="btn-lixeira" onclick="excluirProduto(${prod.id})">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.alterarQtdManual = function(id, delta) {
+            const prod = produtos.find(p => p.id === id);
+            if (prod) {
+                prod.quantidade += delta;
+                if (prod.quantidade < 0) prod.quantidade = 0; // não permite saldo negativo por botões rápidos
+                localStorage.setItem('erp_mei_produtos', JSON.stringify(produtos));
+                renderizarEstoque();
+            }
+        }
+
+        window.excluirProduto = function(id) {
+            if(confirm('Tem certeza que deseja apagar este produto do estoque?')) {
+                produtos = produtos.filter(p => p.id !== id);
+                localStorage.setItem('erp_mei_produtos', JSON.stringify(produtos));
+                renderizarEstoque();
+            }
+        }
+
+        window.alternarCamposOp = function() {
+            const tipo = document.getElementById('op-tipo').value;
+            const grupoProd = document.getElementById('grupo-op-produto');
+            const grupoDesc = document.getElementById('grupo-op-descricao');
+            const labelValor = document.getElementById('label-op-valor');
+
+            if(tipo === 'venda') {
+                grupoProd.style.display = 'block';
+                grupoDesc.style.display = 'none';
+                labelValor.innerText = 'Valor Total da Venda';
+                atualizarDropdownProdutos();
+            } else {
+                grupoProd.style.display = 'none';
+                grupoDesc.style.display = 'block';
+                labelValor.innerText = 'Valor de Custo do Material';
+            }
+        }
+
+        function atualizarDropdownProdutos() {
+            const select = document.getElementById('op-produto-selecionado');
+            select.innerHTML = '<option value="" disabled selected>Escolha o produto...</option>';
+            
+            produtos.forEach(p => {
+                select.innerHTML += `<option value="${p.id}" data-preco="${p.venda}">${p.nome} (Qtd: ${p.quantidade})</option>`;
+            });
+
+            select.onchange = function() {
+                const opcaoOp = this.options[this.selectedIndex];
+                if (opcaoOp.getAttribute('data-preco')) {
+                    document.getElementById('op-valor').value = opcaoOp.getAttribute('data-preco');
+                }
+            };
+        }
+
+        document.getElementById('form-operacao').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const tipo = document.getElementById('op-tipo').value;
+            const valor = parseFloat(document.getElementById('op-valor').value);
+            
+            let descricaoFinal = "";
+            let custoAssociado = 0;
+
+            if (tipo === 'venda') {
+                const select = document.getElementById('op-produto-selecionado');
+                if(!select.value) { alert('Por favor, selecione um produto.'); return; }
+                const prodRef = produtos.find(p => p.id == select.value);
+                
+                if (prodRef.quantidade <= 0) {
+                    if(!confirm('Este produto está sem saldo em estoque. Deseja realizar a venda assim mesmo?')) {
+                        return;
+                    }
+                }
+                
+                // Abate 1 unidade do estoque automaticamente após a venda efetuada
+                prodRef.quantidade = Math.max(0, prodRef.quantidade - 1);
+                localStorage.setItem('erp_mei_produtos', JSON.stringify(produtos));
+                
+                descricaoFinal = `Venda: ${prodRef.nome}`;
+                custoAssociado = prodRef.custo; 
+            } else {
+                descricaoFinal = document.getElementById('op-descricao').value.trim() || "Compra de Materiais";
+                custoAssociado = valor; 
+            }
+
+            const novaTransacao = {
+                tipo: tipo,
+                descricao: descricaoFinal,
+                valor: valor,
+                custoProducao: custoAssociado,
+                data: new Date().toLocaleDateString('pt-BR')
+            };
+
+            transacoes.unshift(novaTransacao);
+            localStorage.setItem('erp_mei_transacoes', JSON.stringify(transacoes));
+            this.reset();
+            alternarCamposOp();
+            alert('Operação financeira computada e estoque atualizado!');
+        });
+
+        function renderizarHome() {
+            document.getElementById('home-loja-nome').innerText = dadosEmpresa ? dadosEmpresa.nome : "Minha Loja";
+            const boxLogo = document.getElementById('home-loja-logo');
+            
+            if(dadosEmpresa && dadosEmpresa.logoUrl) {
+                boxLogo.innerHTML = `<img src="${dadosEmpresa.logoUrl}" alt="Logo">`;
+            } else {
+                boxLogo.innerHTML = "🏬";
+            }
+            alternarCamposOp();
+        }
+
+        function renderizarFinancas() {
+            let totalEntradas = 0;
+            let totalSaidas = 0;
+            let lucroLiquidoAcumulado = 0;
+
+            const container = document.getElementById('extrato-container');
+            container.innerHTML = '';
+
+            transacoes.forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'item-lista';
+                
+                if(t.tipo === 'venda') {
+                    totalEntradas += t.valor;
+                    lucroLiquidoAcumulado += (t.valor - t.custoProducao);
+                    
+                    div.innerHTML = `
+                        <div><strong>${t.descricao}</strong><br><small>${t.data}</small></div>
+                        <span style="color:var(--cor-sucesso); font-weight:600;">+ R$ ${t.valor.toFixed(2)}</span>
+                    `;
+                } else {
+                    totalSaidas += t.valor;
+                    lucroLiquidoAcumulado -= t.valor;
+                    
+                    div.innerHTML = `
+                        <div><strong>${t.descricao}</strong><br><small>${t.data}</small></div>
+                        <span style="color:var(--cor-erro); font-weight:600;">- R$ ${t.valor.toFixed(2)}</span>
+                    `;
+                }
+                container.appendChild(div);
+            });
+
+            document.getElementById('fin-entradas').innerText = `R$ ${totalEntradas.toFixed(2)}`;
+            document.getElementById('fin-saidas').innerText = `R$ ${totalSaidas.toFixed(2)}`;
+            
+            const txtLucro = document.getElementById('fin-lucro');
+            txtLucro.innerText = `R$ ${lucroLiquidoAcumulado.toFixed(2)}`;
+            
+            if(lucroLiquidoAcumulado >= 0) {
+                txtLucro.className = 'lucro-positivo';
+            } else {
+                txtLucro.className = 'lucro-negativo';
+            }
+        }
+
+        function sincronizarPerfilForm() {
+            if(dadosEmpresa) {
+                document.getElementById('perf-nome').value = dadosEmpresa.nome;
+                document.getElementById('perf-endereco').value = dadosEmpresa.endereco === 'Não informado' ? '' : dadosEmpresa.endereco;
+                document.getElementById('perf-contato').value = dadosEmpresa.contato === 'Não informado' ? '' : dadosEmpresa.contato;
+                document.getElementById('perf-logo-url').value = dadosEmpresa.logoUrl;
+            }
+        }
+
+        document.getElementById('form-perfil').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if(dadosEmpresa) {
+                dadosEmpresa.nome = document.getElementById('perf-nome').value;
+                dadosEmpresa.endereco = document.getElementById('perf-endereco').value;
+                dadosEmpresa.contato = document.getElementById('perf-contato').value;
+                dadosEmpresa.logoUrl = document.getElementById('perf-logo-url').value;
+                
+                localStorage.setItem('erp_mei_perfil', JSON.stringify(dadosEmpresa));
+                alert('Dados salvos e atualizados no sistema!');
+                renderizarHome();
+            }
+        });
+
+        window.compartilharDados = function() {
+            if(!dadosEmpresa || dadosEmpresa.endereco === 'Não informado') {
+                alert('Por favor, preencha o seu endereço e contato no formulário acima antes de compartilhar.');
+                return;
+            }
+
+            const textoCompartilhar = `🛒 *Dados de Contato - ${dadosEmpresa.nome}*\n\n📍 *Endereço:* ${dadosEmpresa.endereco}\n📞 *Contato / WhatsApp:* ${dadosEmpresa.contato}\n\n_Aguardamos o seu pedido!_`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: dadosEmpresa.nome,
+                    text: textoCompartilhar,
+                }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(textoCompartilhar);
+                alert('Dados formatados copiados para a Área de Transferência! Basta colar (Ctrl+V) no WhatsApp para enviar para o cliente.');
+            }
+        }
+
+        irPara('tela-login');
+    </script>
+</body>
+</html>
