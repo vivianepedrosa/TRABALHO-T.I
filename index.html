@@ -3,306 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP MEI - Gestão Integrada v2</title>
+    <title>ERP MEI - Gestão Clean Cloud v5</title>
     
-    <!-- ==========================================
-         SEÇÃO 1: ESTILIZAÇÃO (CSS) - UX/UI PREMIUM
-         ========================================== -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         :root {
-            --bg-sistema: #111827;
-            --bg-app: #f9fafb;
+            --bg-sistema: #090d16;
+            --bg-app: #f1f5f9;
             --card-cor: #ffffff;
-            --texto-p: #1f2937;
-            --texto-s: #4b5563;
-            --cor-primaria: #2563eb;
+            --texto-p: #0f172a;
+            --texto-s: #64748b;
+            --cor-primaria: #6366f1;
+            --cor-primaria-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            --cor-primaria-suave: #eef2ff;
             --cor-sucesso: #10b981;
-            --cor-erro: #ef4444;
-            --cor-alerta: #f59e0b;
-            --borda: #e5e7eb;
+            --cor-erro: #f43f5e;
+            --borda: #e2e8f0;
+            --radius: 20px;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: var(--bg-sistema); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        
+        .app-container { 
+            width: 100%; 
+            max-width: 430px; 
+            background-color: var(--bg-app); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            padding-bottom: 95px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); 
         }
-
-        body {
-            background-color: var(--bg-sistema);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
+        
+        .tela { display: none; padding: 24px 20px; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tela.ativa { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .app-header { 
+            text-align: center; 
+            padding: 30px 20px; 
+            background: white; 
+            border-radius: 0 0 32px 32px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
         }
-
-        /* Container Mobile-First Centralizado */
-        .app-container {
-            width: 100%;
-            max-width: 430px;
-            background-color: var(--bg-app);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            padding-bottom: 75px; /* Espaço para a barra inferior */
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        .loja-logo-topo { 
+            width: 85px; 
+            height: 85px; 
+            background: var(--cor-primaria-suave); 
+            border-radius: 50%; 
+            margin: 0 auto 14px auto; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2.2rem; 
+            border: 4px solid white; 
+            box-shadow: 0 12px 24px -4px rgba(79, 70, 229, 0.25);
+            overflow: hidden; 
         }
-
-        /* Telas (Ocultas por padrão, controladas por JS) */
-        .tela {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.3s ease-in-out;
+        .loja-logo-topo img { width: 100%; height: 100%; object-fit: cover; }
+        .loja-nome-topo { font-size: 1.35rem; font-weight: 800; color: var(--texto-p); letter-spacing: -0.5px; }
+        
+        .card { 
+            background: var(--card-cor); 
+            padding: 24px; 
+            border-radius: var(--radius); 
+            border: 1px solid rgba(226, 232, 240, 0.8); 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 18px -4px rgba(0,0,0,0.03); 
         }
-
-        .tela.ativa {
-            display: block;
+        .titulo-secao { font-size: 1.1rem; color: var(--texto-p); margin-bottom: 18px; font-weight: 800; letter-spacing: -0.3px; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.75rem; color: var(--texto-s); margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        .form-control { width: 100%; padding: 14px 16px; border: 1.5px solid var(--borda); border-radius: 12px; font-size: 0.95rem; background: #f8fafc; color: var(--texto-p); outline: none; transition: all 0.25s ease; }
+        .form-control:focus { border-color: var(--cor-primaria); background: white; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); }
+        
+        .file-input-wrapper { position: relative; display: inline-block; width: 100%; }
+        .file-input-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px;
+            background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 12px;
+            font-size: 0.9rem; font-weight: 600; color: var(--texto-s); cursor: pointer; transition: all 0.2s;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Componentes de Login / Cadastro */
-        .auth-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 30px;
-            background: white;
-        }
-
-        .auth-logo {
-            text-align: center;
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-
-        /* Header do App (Home) */
-        .app-header {
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-bottom: 1px solid var(--borda);
-            margin-bottom: 15px;
-        }
-
-        .loja-nome-topo {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--texto-p);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .loja-logo-centro {
-            width: 90px;
-            height: 90px;
-            background: #e2e8f0;
-            border-radius: 50%;
-            margin: 15px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            border: 3px solid var(--cor-primaria);
-            overflow: hidden;
-        }
-
-        .loja-logo-centro img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Cards, Grupos e Forms */
-        .card {
-            background: var(--card-cor);
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid var(--borda);
-            margin-bottom: 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .titulo-secao {
-            font-size: 1.1rem;
-            color: var(--texto-p);
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--texto-s);
-            margin-bottom: 4px;
-            font-weight: 500;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 11px;
-            border: 1px solid var(--borda);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            background: #fafdff;
-            outline: none;
-        }
-
-        .form-control:focus {
-            border-color: var(--cor-primaria);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        /* Botões */
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        .btn-p { background: var(--cor-primaria); color: white; }
-        .btn-p:hover { background: #1d4ed8; }
-        .btn-s { background: #e0e7ff; color: var(--cor-primaria); }
-        .btn-vazado { background: transparent; border: 1px solid var(--cor-primaria); color: var(--cor-primaria); }
-        .btn-link { background: none; color: var(--cor-primaria); font-size: 0.85rem; padding: 5px; }
-
-        /* Lista de Itens (Estoque/Extrato) */
-        .item-lista {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--borda);
-        }
-
+        .file-input-btn:hover { background: #e2e8f0; border-color: var(--cor-primaria); color: var(--cor-primaria); }
+        .file-input-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.25s ease; }
+        .btn:active { transform: scale(0.98); }
+        .btn-p { background: var(--cor-primaria-gradient); color: white; box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35); }
+        .btn-p:hover { box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45); }
+        .btn-s { background: var(--cor-primaria-suave); color: var(--cor-primaria); }
+        .btn-s:hover { background: #e0e7ff; }
+        .btn-vazado { background: transparent; border: 1.5px solid var(--cor-primaria); color: var(--cor-primaria); }
+        .btn-link { background: none; color: var(--cor-primaria); font-size: 0.85rem; padding: 5px; font-weight: 700; border: none; cursor: pointer; }
+        
+        .item-lista { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--borda); }
         .item-lista:last-child { border-bottom: none; }
-
-        /* Controles de Quantidade no Estoque */
-        .controle-qtd {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-right: 10px;
+        .controle-qtd { display: flex; align-items: center; gap: 12px; }
+        .btn-qtd { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .btn-qtd:hover { background: #e2e8f0; }
+        .btn-lixeira { background: #fef2f2; border: none; color: var(--cor-erro); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .btn-lixeira:hover { background: #fee2e2; }
+        
+        .financas-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .mini-card { background: white; padding: 18px; border-radius: var(--radius); border: 1px solid var(--borda); text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        .mini-card span { font-size: 0.75rem; color: var(--texto-s); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .mini-card p { font-size: 1.35rem; font-weight: 800; margin-top: 6px; }
+        
+        .wrapper-cartao { position: absolute; left: -9999px; top: 0; }
+        .cartao-design-box {
+            width: 380px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 32px; border-radius: 24px; border: 1px solid #e2e8f0; text-align: center; position: relative;
         }
-
-        .btn-qtd {
-            background: #e2e8f0;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .cartao-design-box::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px;
+            background: linear-gradient(90deg, #4f46e5, #06b6d4); border-radius: 24px 24px 0 0;
         }
-
-        .btn-qtd:hover {
-            background: #cbd5e1;
+        .cartao-logo-centro {
+            width: 90px; height: 90px; background: #eef2ff; border-radius: 50%; margin: 10px auto 18px auto;
+            display: flex; align-items: center; justify-content: center; font-size: 2.4rem; border: 4px solid white;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.15); overflow: hidden;
         }
+        .cartao-logo-centro img { width: 100%; height: 100%; object-fit: cover; }
+        .cartao-titulo-loja { font-size: 1.5rem; font-weight: 900; color: #0f172a; margin-bottom: 20px; text-transform: uppercase; letter-spacing: -0.3px; }
+        
+        .cartao-info-container { display: flex; flex-direction: column; gap: 10px; }
+        .cartao-info-linha { display: flex; align-items: center; gap: 12px; text-align: left; background: white; padding: 12px 14px; border-radius: 12px; border: 1px solid #f1f5f9; }
+        .cartao-info-icon { font-size: 1.1rem; }
+        .cartao-info-texto { font-size: 0.9rem; color: #334155; font-weight: 600; }
+        .cartao-rodape { font-size: 0.75rem; color: #94a3b8; margin-top: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
-        .btn-lixeira {
-            background: none;
-            border: none;
-            color: var(--cor-erro);
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 5px;
+        .preview-container-tela { background: white; border: 2px dashed #cbd5e1; padding: 16px; border-radius: var(--radius); margin-bottom: 20px; text-align: center; }
+        .preview-imagem-gerada { width: 100%; max-width: 260px; border-radius: 16px; box-shadow: 0 15px 30px -5px rgba(0,0,0,0.15); margin: 10px auto; display: none; border: 1px solid var(--borda); }
+
+        .nav-inferior { 
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; 
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(226, 232, 240, 0.8); display: flex; justify-content: space-around; align-items: center; 
+            z-index: 100; padding-bottom: 12px; border-radius: 28px 28px 0 0; 
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.03);
         }
+        .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; color: var(--texto-s); font-size: 0.75rem; cursor: pointer; gap: 6px; flex: 1; font-weight: 700; transition: all 0.2s; }
+        .nav-item-icon { font-size: 1.4rem; transition: transform 0.2s; color: #94a3b8; }
+        .nav-item.ativo { color: var(--cor-primaria); }
+        .nav-item.ativo .nav-item-icon { transform: translateY(-4px); color: var(--cor-primaria); filter: drop-shadow(0 4px 6px rgba(99,102,241,0.2)); }
 
-        /* Grid Financeiro */
-        .financas-resumo {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .mini-card {
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--borda);
-            text-align: center;
-        }
-
-        .mini-card span { font-size: 0.75rem; color: var(--texto-s); text-transform: uppercase; }
-        .mini-card p { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
-
-        .lucro-positivo { color: var(--cor-sucesso); }
-        .lucro-negativo { color: var(--cor-erro); }
-
-        /* Barra de Navegação Inferior (Fixed) */
-        .nav-inferior {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 65px;
-            background: white;
-            border-top: 1px solid var(--borda);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .nav-item {
-            background: none;
-            border: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--texto-s);
-            font-size: 0.7rem;
-            cursor: pointer;
-            gap: 4px;
-            flex: 1;
-        }
-
-        .nav-item-icon {
-            font-size: 1.2rem;
-        }
-
-        .nav-item.ativo {
-            color: var(--cor-primaria);
-            font-weight: bold;
-        }
+        .auth-container { display: flex; flex-direction: column; justify-content: center; min-height: 100vh; padding: 28px; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); }
+        
+        .filtro-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .datas-custom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-
-        <!-- ==========================================
-             TELA: AUTENTICAÇÃO (LOGIN)
-             ========================================== -->
         <section id="tela-login" class="tela ativa">
             <div class="auth-container">
-                <div class="auth-logo">📦</div>
-                <h2 class="titulo-secao" style="text-align: center; margin-bottom: 25px;">Acesse seu ERP MEI</h2>
-                
+                <div style="text-align: center; font-size: 4rem; margin-bottom: 12px; filter: drop-shadow(0 10px 15px rgba(99,102,241,0.3));">⚡</div>
+                <h2 style="text-align: center; margin-bottom: 8px; font-weight: 900; font-size: 1.6rem; color: var(--texto-p); letter-spacing: -0.5px;">Clean Cloud ERP</h2>
+                <p style="text-align: center; color: var(--texto-s); font-size: 0.9rem; margin-bottom: 32px;">O painel definitivo do MEI inteligente.</p>
                 <form id="form-login">
                     <div class="form-group">
                         <label>CPF ou CNPJ</label>
@@ -312,18 +177,16 @@
                         <label>Senha de Acesso</label>
                         <input type="password" id="login-senha" class="form-control" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn btn-p" style="margin-top: 15px;">Entrar no Sistema</button>
-                    <button type="button" class="btn btn-link" style="margin-top: 10px;" onclick="irPara('tela-cadastro')">Não tem conta? Cadastre sua Loja</button>
+                    <button type="submit" class="btn btn-p" style="margin-top: 20px;">Entrar no Sistema</button>
+                    <button type="button" id="btn-ir-cadastro" class="btn btn-link" style="margin-top: 20px; width: 100%;">Criar nova conta de empresa</button>
                 </form>
             </div>
         </section>
 
-        <!-- ==========================================
-             TELA: CADASTRO
-             ========================================== -->
         <section id="tela-cadastro" class="tela">
-            <div class="auth-container" style="min-height: auto; padding: 20px 30px;">
-                <h2 class="titulo-secao" style="text-align: center;">Cadastrar Empresa</h2>
+            <div class="auth-container">
+                <h2 style="text-align: center; margin-bottom: 8px; font-weight: 900; font-size: 1.6rem; color: var(--texto-p); letter-spacing: -0.5px;">Cadastrar Empresa</h2>
+                <p style="text-align: center; color: var(--texto-s); font-size: 0.9rem; margin-bottom: 28px;">Comece a gerenciar seu negócio hoje.</p>
                 <form id="form-cadastro">
                     <div class="form-group">
                         <label>Nome da Loja</label>
@@ -335,199 +198,262 @@
                     </div>
                     <div class="form-group">
                         <label>Senha de Acesso</label>
-                        <input type="password" id="cad-senha" class="form-control" placeholder="Crie uma senha" required>
+                        <input type="password" id="cad-senha" class="form-control" placeholder="Mínimo 6 caracteres" required>
                     </div>
-                    <button type="submit" class="btn btn-p" style="margin-top: 15px;">Criar Minha Conta</button>
-                    <button type="button" class="btn btn-link" style="margin-top: 10px;" onclick="irPara('tela-login')">Voltar para o Login</button>
+                    
+                    <div class="form-group" style="display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; margin-bottom: 20px;">
+                        <input type="checkbox" id="cad-lgpd" required style="margin-top: 3px; width: 16px; height: 16px; cursor: pointer; accent-color: var(--cor-primaria);">
+                        <label for="cad-lgpd" style="text-transform: none; font-size: 0.8rem; font-weight: 500; color: var(--texto-s); line-height: 1.4;">
+                            Li e aceito a <a href="#" id="btn-abrir-politica" style="color: var(--cor-primaria); font-weight: 700; text-decoration: none;">Política de Privacidade</a> e autorizo o processamento dos dados corporativos.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-p">Criar Minha Conta</button>
+                    <button type="button" id="btn-ir-login" class="btn btn-link" style="margin-top: 20px; width: 100%;">Já tenho conta (Fazer Login)</button>
                 </form>
             </div>
         </section>
 
-        <!-- ==========================================
-             TELA: HOME (PÁGINA INICIAL)
-             ========================================== -->
         <section id="tela-home" class="tela">
             <div class="app-header">
-                <div class="loja-nome-topo" id="home-loja-nome">Minha Loja</div>
-                <div class="loja-logo-centro" id="home-loja-logo">🏬</div>
+                <div class="loja-logo-topo" id="home-loja-logo">🏬</div>
+                <div class="loja-nome-topo" id="home-loja-nome">Carregando...</div>
             </div>
-
-            <!-- Painel de Operações Rápidas -->
             <div class="card">
-                <h3 class="titulo-secao" style="font-size:0.95rem; margin-bottom: 10px;">Lançamento Rápido</h3>
-                
+                <h3 class="titulo-secao">⚡ Lançamento Rápido</h3>
                 <form id="form-operacao">
                     <div class="form-group">
                         <label>Tipo de Operação</label>
-                        <select id="op-tipo" class="form-control" onchange="alternarCamposOp()" required>
+                        <select id="op-tipo" class="form-control" required style="cursor: pointer;">
                             <option value="venda">Nova Venda (Entrada)</option>
                             <option value="compra">Compra de Materiais (Saída)</option>
                         </select>
                     </div>
-
-                    <!-- Input Dinâmico -->
                     <div class="form-group" id="grupo-op-produto">
                         <label>Selecione o Produto Vendido</label>
-                        <select id="op-produto-selecionado" class="form-control">
-                            <!-- Inserido via JS -->
-                        </select>
+                        <select id="op-produto-selecionado" class="form-control" style="cursor: pointer;"></select>
                     </div>
-
                     <div class="form-group" id="grupo-op-descricao" style="display: none;">
-                        <label>Descrição do Material adquirido</label>
-                        <input type="text" id="op-descricao" class="form-control" placeholder="Ex: Tecido, Embalagens">
+                        <label>Descrição da Despesa</label>
+                        <input type="text" id="op-descricao" class="form-control" placeholder="Ex: Tecido, Embalagens, Luz">
                     </div>
-
                     <div class="form-group">
-                        <label id="label-op-valor">Valor Total da Operação</label>
+                        <label id="label-op-valor">Valor Total</label>
                         <input type="number" id="op-valor" step="0.01" class="form-control" placeholder="R$ 0,00" required>
                     </div>
-
-                    <button type="submit" class="btn btn-p">Registrar Movimentação</button>
+                    <button type="submit" class="btn btn-p" style="margin-top: 15px;">Registrar Movimentação</button>
                 </form>
             </div>
         </section>
 
-        <!-- ==========================================
-             TELA: MINHA LOJA (DADOS CADASTRAIS)
-             ========================================== -->
-        <section id="tela-loja" class="tela">
-            <h2 class="titulo-secao">Dados da Loja</h2>
-            
-            <div class="card">
-                <form id="form-perfil">
-                    <div class="form-group">
-                        <label>Nome da Loja</label>
-                        <input type="text" id="perf-nome" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Endereço Físico / Operacional</label>
-                        <input type="text" id="perf-endereco" class="form-control" placeholder="Rua, Número, Bairro, Cidade" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Contato Comercial (WhatsApp/Telefone)</label>
-                        <input type="text" id="perf-contato" class="form-control" placeholder="(00) 00000-0000" required>
-                    </div>
-                    <div class="form-group">
-                        <label>URL da Imagem da Logo (Opcional)</label>
-                        <input type="url" id="perf-logo-url" class="form-control" placeholder="https://linkdaimagem.com/logo.jpg">
-                    </div>
-                    <button type="submit" class="btn btn-p">Salvar Alterações</button>
-                </form>
-            </div>
-
-            <!-- Compartilhamento de Dados -->
-            <div class="card" style="background: #eff6ff; border-color: #bfdbfe;">
-                <h3 class="titulo-secao" style="font-size:0.9rem; color: var(--cor-primaria);">Divulgação Expressa</h3>
-                <p style="font-size: 0.8rem; color: var(--texto-s); margin-bottom: 12px;">Gere um cartão virtual limpo com seus dados de endereço e contato para enviar para novos clientes.</p>
-                <button class="btn btn-vazado" onclick="compartilharDados()">🔗 Compartilhar Contato</button>
-            </div>
-
-            <button class="btn btn-link" style="color: var(--cor-erro); margin-top: 10px;" onclick="fazerLogout()">Sair do Sistema</button>
-        </section>
-
-        <!-- ==========================================
-             TELA: MEU ESTOQUE
-             ========================================== -->
         <section id="tela-estoque" class="tela">
-            <h2 class="titulo-secao">Gerenciamento de Estoque</h2>
-            
+            <h2 class="titulo-secao" style="font-size: 1.4rem;">Estoque de Produtos</h2>
             <div class="card">
-                <h3 class="titulo-secao" style="font-size:0.9rem;">Cadastrar / Abastecer Produto</h3>
+                <h3 class="titulo-secao">📦 Cadastrar Novo Item</h3>
                 <form id="form-estoque">
                     <div class="form-group">
                         <label>Nome do Produto</label>
-                        <input type="text" id="est-nome" class="form-control" placeholder="Ex: Camiseta Básica" required>
+                        <input type="text" id="est-nome" class="form-control" placeholder="Ex: Bolo de Pote" required>
+                    </div>
+                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label>Custo (R$)</label>
+                            <input type="number" id="est-custo" step="0.01" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <div>
+                            <label>Venda (R$)</label>
+                            <input type="number" id="est-venda" step="0.01" class="form-control" placeholder="0.00" required>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Custo de Produção/Compra (R$)</label>
-                        <input type="number" id="est-custo" step="0.01" class="form-control" placeholder="0.00" required>
+                        <label>Quantidade em Estoque</label>
+                        <input type="number" id="est-qtd" class="form-control" value="1" min="0" required>
                     </div>
-                    <div class="form-group">
-                        <label>Valor de Venda (R$)</label>
-                        <input type="number" id="est-venda" step="0.01" class="form-control" placeholder="0.00" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Quantidade Inicial / A adicionar</label>
-                        <input type="number" id="est-qtd" class="form-control" value="1" min="1" required>
-                    </div>
-                    <button type="submit" class="btn btn-p">Salvar no Estoque</button>
+                    <button type="submit" class="btn btn-p" style="margin-top: 5px;">Salvar no Estoque</button>
                 </form>
             </div>
-
             <div class="card">
-                <h3 class="titulo-secao" style="font-size:0.9rem; margin-bottom: 10px;">Produtos Cadastrados</h3>
-                <div id="lista-produtos-container">
-                    <!-- Gerado dinamicamente via JS -->
-                </div>
+                <h3 class="titulo-secao">📋 Itens em Linha</h3>
+                <div id="lista-produtos-container"></div>
             </div>
         </section>
 
-        <!-- ==========================================
-             TELA: MINHAS FINANÇAS
-             ========================================== -->
         <section id="tela-financas" class="tela">
-            <h2 class="titulo-secao">Painel Financeiro</h2>
+            <h2 class="titulo-secao" style="font-size: 1.4rem;">Fluxo de Caixa</h2>
             
+            <div class="card filtro-container">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>📅 Filtrar por Período</label>
+                    <select id="fin-filtro-periodo" class="form-control" style="cursor: pointer;">
+                        <option value="todos" selected>Todos os Lançamentos</option>
+                        <option value="hoje">Hoje</option>
+                        <option value="7dias">Últimos 7 dias</option>
+                        <option value="30dias">Últimos 30 dias</option>
+                        <option value="custom">Intervalo Customizado...</option>
+                    </select>
+                </div>
+                <div id="fin-datas-customizadas" class="datas-custom-grid" style="display: none;">
+                    <div>
+                        <label style="font-size: 0.7rem;">Início</label>
+                        <input type="date" id="fin-data-inicio" class="form-control">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.7rem;">Fim</label>
+                        <input type="date" id="fin-data-fim" class="form-control">
+                    </div>
+                </div>
+            </div>
+
             <div class="financas-resumo">
-                <div class="mini-card">
+                <div class="mini-card" style="border-left: 4px solid var(--cor-sucesso);">
                     <span>Entradas</span>
                     <p id="fin-entradas" style="color: var(--cor-sucesso);">R$ 0,00</p>
                 </div>
-                <div class="mini-card">
+                <div class="mini-card" style="border-left: 4px solid var(--cor-erro);">
                     <span>Saídas</span>
                     <p id="fin-saidas" style="color: var(--cor-erro);">R$ 0,00</p>
                 </div>
             </div>
-            
-            <div class="card" id="card-lucro-container" style="text-align: center;">
-                <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--texto-s);">Lucro Líquido Real</span>
-                <p id="fin-lucro" style="font-size: 1.8rem; font-weight: 800; margin-top: 4px;">R$ 0,00</p>
+            <div class="card" style="text-align: center; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border: 1px solid rgba(99, 102, 241, 0.15);">
+                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--texto-s); letter-spacing: 0.5px;">Lucro Líquido Real</span>
+                <p id="fin-lucro" style="font-size: 2rem; font-weight: 900; margin-top: 6px;">R$ 0,00</p>
             </div>
-
             <div class="card">
-                <h3 class="titulo-secao" style="font-size:0.9rem; margin-bottom: 10px;">Extrato de Transações</h3>
-                <div id="extrato-container">
-                    <!-- Gerado dinamicamente via JS -->
-                </div>
+                <h3 class="titulo-secao">🕒 Histórico de Lançamentos</h3>
+                <div id="extrato-container"></div>
             </div>
         </section>
 
-        <!-- ==========================================
-             NAVEGAÇÃO INFERIOR FIXA (BOTTOM NAV BAR)
-             ========================================== -->
+        <section id="tela-loja" class="tela">
+            <h2 class="titulo-secao" style="font-size: 1.4rem;">Configurações da Empresa</h2>
+            <div class="card">
+                <form id="form-perfil">
+                    <div class="form-group">
+                        <label>Nome Comercial da Loja</label>
+                        <input type="text" id="perf-nome" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Endereço Físico / Cidade</label>
+                        <input type="text" id="perf-endereco" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>WhatsApp Principal</label>
+                        <input type="text" id="perf-contato" class="form-control" placeholder="(00) 00000-0000" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Instagram do Negócio (Opcional)</label>
+                        <input type="text" id="perf-instagram" class="form-control" placeholder="Ex: @docesabor_mei">
+                    </div>
+                    <div class="form-group">
+                        <label>Contato Secundário / Telefone 2 (Opcional)</label>
+                        <input type="text" id="perf-contato2" class="form-control" placeholder="Ex: (00) 3333-4444">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Logo da Empresa (Foto Local)</label>
+                        <div class="file-input-wrapper">
+                            <div class="file-input-btn" id="label-arquivo-status">📸 Escolher Imagem da Galeria</div>
+                            <input type="file" id="perf-logo-file" accept="image/*">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-p" style="margin-top: 10px;">Atualizar Perfil</button>
+                </form>
+            </div>
+            
+            <div class="card" style="border: 1px solid #bbf7d0; background: #f0fdf4;">
+                <h3 class="titulo-secao" style="color: #166534; font-size: 1.05rem; margin-bottom: 6px;">🎴 Cartão de Visita em Imagem</h3>
+                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 16px; line-height: 1.4;">Gere automaticamente o cartão com contatos e redes sociais ativos para envio de mídia direta.</p>
+                
+                <div class="preview-container-tela">
+                    <span id="preview-placeholder-texto" style="font-size:0.85rem; color:var(--texto-s);">Nenhuma imagem gerada ainda.</span>
+                    <img id="cartao-imagem-final-preview" class="preview-imagem-gerada" alt="Cartão Digital">
+                </div>
+
+                <button type="button" id="btn-gerar-cartao-imagem" class="btn btn-s" style="background: #10b981; color: white; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">🎨 Criar/Atualizar Imagem</button>
+                <button type="button" id="btn-compartilhar-cartao" class="btn btn-vazado" style="display: none; background: white;">🚀 Compartilhar Imagem</button>
+            </div>
+            
+            <div class="card" style="border: 1px solid #fecaca; background: #fff5f5;">
+                <h3 class="titulo-secao" style="color: #991b1b; font-size: 1.05rem; margin-bottom: 6px;">⚠️ Zona de Perigo (Direitos LGPD)</h3>
+                <p style="font-size: 0.85rem; color: #7f1d1d; margin-bottom: 16px; line-height: 1.4;">
+                    De acordo com o Art. 18 da LGPD, você tem o direito de revogar este consentimento. Ao clicar abaixo, todos os seus dados de produtos, vendas e cadastro corporativo serão apagados permanentemente dos servidores e sua conta será destruída.
+                </p>
+                <button type="button" id="btn-excluir-conta" class="btn" style="background: var(--cor-erro); color: white; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);">🔥 Excluir Minha Conta de Vez</button>
+            </div>
+
+            <button type="button" id="btn-logout" class="btn btn-link" style="color: var(--cor-erro); margin-top: 10px; width:100%;">Sair da Conta</button>
+        </section>
+
+        <div class="wrapper-cartao">
+            <div id="caixa-design-cartao-real" class="cartao-design-box">
+                <div class="cartao-logo-centro" id="cartao-real-logo">🏬</div>
+                <div class="cartao-titulo-loja" id="cartao-real-nome-loja">Minha Empresa</div>
+                
+                <div class="cartao-info-container" id="cartao-real-linhas-container"></div>
+                
+                <div class="cartao-rodape">⚡ Criado via ERP MEI Cloud</div>
+            </div>
+        </div>
+
+        <div id="modal-politica" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; transition: opacity 0.2s ease;">
+            <div style="background: white; width: 100%; max-width: 380px; max-height: 75vh; border-radius: var(--radius); padding: 24px; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+                <h3 style="margin-bottom: 16px; color: var(--texto-p); font-weight: 800; font-size: 1.2rem; letter-spacing: -0.3px;">🛡️ Política de Privacidade</h3>
+                <div style="font-size: 0.85rem; color: var(--texto-s); line-height: 1.6; display: flex; flex-direction: column; gap: 12px;">
+                    <p><strong>1. Controle e Propriedade:</strong> O Clean Cloud ERP opera como gerenciador de informações de vendas. Todos os dados inseridos são de propriedade do usuário.</p>
+                    <p><strong>2. Coleta de Informações:</strong> Armazenamos as credenciais comerciais, dados cadastrais expostos no perfil (Nome da Loja, CPF/CNPJ estrutural, contatos telefônicos) e lançamentos operacionais.</p>
+                    <p><strong>3. Finalidade do Tratamento:</strong> Os dados coletados destinam-se exclusivamente à execução dos cálculos de lucro, controle de estoque e geração gráfica de mídias de contato.</p>
+                    <p><strong>4. Segurança:</strong> A infraestrutura utiliza criptografia na camada de persistência do Google Firebase Cloud, mitigando o acesso não autorizado via controle restrito de chaves.</p>
+                    <p><strong>5. Exclusão e Direitos:</strong> Em concordância com os direitos do titular (Art. 18 da LGPD), você pode retificar seus registros na aba de Perfil ou desvincular seu cadastro a qualquer momento.</p>
+                </div>
+                <button type="button" id="btn-fechar-politica" class="btn btn-p" style="margin-top: 24px; padding: 12px;">Compreendi e Aceito</button>
+            </div>
+        </div>
+
         <nav class="nav-inferior" id="barra-navegacao" style="display: none;">
-            <button class="nav-item ativo" onclick="navegarPara('tela-home', this)">
-                <span class="nav-item-icon">🏠</span>
-                <span>Home</span>
+            <button class="nav-item ativo" data-tela="tela-home">
+                <span class="nav-item-icon">🏠</span><span>Painel</span>
             </button>
-            <button class="nav-item" onclick="navegarPara('tela-estoque', this)">
-                <span class="nav-item-icon">📦</span>
-                <span>Estoque</span>
+            <button class="nav-item" data-tela="tela-estoque">
+                <span class="nav-item-icon">📦</span><span>Estoque</span>
             </button>
-            <button class="nav-item" onclick="navegarPara('tela-financas', this)">
-                <span class="nav-item-icon">💵</span>
-                <span>Finanças</span>
+            <button class="nav-item" data-tela="tela-financas">
+                <span class="nav-item-icon">💵</span><span>Finanças</span>
             </button>
-            <button class="nav-item" onclick="navegarPara('tela-loja', this)">
-                <span class="nav-item-icon">🏬</span>
-                <span>Minha Loja</span>
+            <button class="nav-item" data-tela="tela-loja">
+                <span class="nav-item-icon">🏬</span><span>Perfil</span>
             </button>
         </nav>
-
     </div>
 
-    <!-- ==========================================
-         SEÇÃO 2: LÓGICA DE PROGRAMAÇÃO (JAVASCRIPT)
-         ========================================== -->
     <script>
-        let dadosEmpresa = JSON.parse(localStorage.getItem('erp_mei_perfil')) || null;
-        let produtos = JSON.parse(localStorage.getItem('erp_mei_produtos')) || [];
-        let transacoes = JSON.parse(localStorage.getItem('erp_mei_transacoes')) || [];
+        // Configuração Firebase mantida íntegra
+        const firebaseConfig = {
+          apiKey: "AIzaSyAiseP2L2K5Twk4Uuju8MmAAuVl2W39jv8",
+          authDomain: "joguinho-85bce.firebaseapp.com",
+          databaseURL: "https://joguinho-85bce-default-rtdb.firebaseio.com",
+          projectId: "joguinho-85bce",
+          storageBucket: "joguinho-85bce.firebasestorage.app",
+          messagingSenderId: "503473504109",
+          appId: "1:503473504109:web:3ab530b05ecf33cd236464"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let dadosEmpresa = null;
+        let produtos = [];
+        let transacoes = [];
+        let base64LogoCarregada = ""; 
+        let blobImagemGlobal = null;
+        let primeiroDirecionamentoRealizado = false;
 
         function irPara(idTela) {
             document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
-            document.getElementById(idTela).classList.add('ativa');
+            const telaAlvo = document.getElementById(idTela);
+            if(telaAlvo) telaAlvo.classList.add('ativa');
             
             const barraNav = document.getElementById('barra-navegacao');
             if(idTela === 'tela-login' || idTela === 'tela-cadastro') {
@@ -545,306 +471,536 @@
             if(idTela === 'tela-home') renderizarHome();
             if(idTela === 'tela-estoque') renderizarEstoque();
             if(idTela === 'tela-financas') renderizarFinancas();
+            if(idTela === 'tela-loja') preencherFormPerfil();
         }
+
+        // AGUARDAR O DOM CARREGAR PARA ATRIBUIR OS EVENTOS
+        document.addEventListener("DOMContentLoaded", function() {
+            
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.addEventListener('click', function() { navegarPara(this.getAttribute('data-tela'), this); });
+            });
+
+            // ATRIBUIÇÃO DOS BOTÕES DE TRANSIÇÃO (CORRIGIDO)
+            document.getElementById('btn-ir-cadastro').addEventListener('click', function(e) {
+                e.preventDefault();
+                irPara('tela-cadastro');
+            });
+            
+            document.getElementById('btn-ir-login').addEventListener('click', function(e) {
+                e.preventDefault();
+                irPara('tela-login');
+            });
+
+            // COMPLIANCE E MODAL LGPD
+            document.getElementById('btn-abrir-politica').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('modal-politica').style.display = 'flex';
+            });
+            document.getElementById('btn-fechar-politica').addEventListener('click', function() {
+                document.getElementById('modal-politica').style.display = 'none';
+            });
+
+            // EXCLUSÃO DE CONTA COMPLETA (LGPD ART. 18)
+            document.getElementById('btn-excluir-conta').addEventListener('click', function() {
+                const usuarioAtual = auth.currentUser;
+                if(!usuarioAtual) return;
+
+                const confirmacao1 = confirm("⚠️ ATENÇÃO: Você tem certeza absoluta de que deseja apagar os dados da sua empresa corporativa? Essa operação é irreversível.");
+                if(confirmacao1) {
+                    const confirmacao2 = prompt("Para confirmar a exclusão e revogação definitiva dos dados da LGPD, digite o texto 'DESTRUIR CONTA':");
+                    
+                    if(confirmacao2 === "DESTRUIR CONTA") {
+                        const uid = usuarioAtual.uid;
+                        
+                        // 1. Limpa o nó da empresa inteira na Realtime Database
+                        db.ref('usuarios/' + uid).remove()
+                        .then(() => {
+                            // 2. Apaga a credencial de autenticação no Firebase Auth
+                            usuarioAtual.delete()
+                            .then(() => {
+                                alert("🔥 Seus dados corporativos e sua conta foram completamente apagados dos nossos servidores em conformidade com a LGPD.");
+                            })
+                            .catch((error) => {
+                                console.error("Erro Auth Exclusão:", error);
+                                if(error.code === "auth/requires-recent-login") {
+                                    alert("Sua sessão expirou por segurança. Saia da conta, faça o login novamente e repita a operação de exclusão.");
+                                } else {
+                                    alert("Os dados do banco foram removidos, mas houve uma falha interna no Auth: " + error.message);
+                                }
+                                auth.signOut();
+                            });
+                        })
+                        .catch((err) => {
+                            alert("Falha de rede ao tentar apagar dados na nuvem: " + err.message);
+                        });
+                    } else {
+                        alert("Confirmação inválida. A operação foi cancelada com segurança.");
+                    }
+                }
+            });
+        });
+
+        // ESCUTADOR DE AUTENTICAÇÃO DO FIREBASE
+        auth.onAuthStateChanged((user) => {
+            if (user) { 
+                escutarDadosNuvem(user.uid); 
+            } else { 
+                primeiroDirecionamentoRealizado = false;
+                // Só joga para o login se o usuário já não estiver visualizando voluntariamente a tela de cadastro
+                const telaCadastroAtiva = document.getElementById('tela-cadastro').classList.contains('ativa');
+                if(!telaCadastroAtiva) {
+                    irPara('tela-login'); 
+                }
+            }
+        });
 
         document.getElementById('form-cadastro').addEventListener('submit', function(e) {
             e.preventDefault();
-            dadosEmpresa = {
-                nome: document.getElementById('cad-nome').value,
-                documento: document.getElementById('cad-id').value,
-                senha: document.getElementById('cad-senha').value,
-                endereco: 'Não informado',
-                contato: 'Não informado',
-                logoUrl: ''
-            };
-            localStorage.setItem('erp_mei_perfil', JSON.stringify(dadosEmpresa));
-            alert('Cadastro realizado! Efetue seu login para acessar.');
-            this.reset();
-            irPara('tela-login');
+            const nome = document.getElementById('cad-nome').value.trim();
+            const documento = document.getElementById('cad-id').value.replace(/\D/g, "");
+            const senha = document.getElementById('cad-senha').value;
+            
+            if(!documento) {
+                alert("Por favor, informe um CPF ou CNPJ válido composto apenas por números.");
+                return;
+            }
+            const emailFake = documento + "@erpmei.com";
+
+            auth.createUserWithEmailAndPassword(emailFake, senha)
+                .then((userCredential) => {
+                    db.ref('usuarios/' + userCredential.user.uid + '/perfil').set({
+                        nome: nome, 
+                        documento: documento, 
+                        endereco: 'Não informado', 
+                        contato: 'Não informado', 
+                        logoUrl: '', 
+                        instagram: '', 
+                        contato2: '',
+                        consentimentoLGPD: true,
+                        dataConsentimento: new Date().toISOString()
+                    })
+                    .then(() => {
+                        alert('Conta da empresa aberta com sucesso!');
+                        document.getElementById('form-cadastro').reset();
+                    })
+                    .catch((err) => {
+                        alert("Conta criada, mas houve uma falha de sincronia ao salvar o perfil: " + err.message);
+                    });
+                })
+                .catch((error) => { 
+                    alert('Erro ao criar conta: ' + error.message); 
+                });
         });
 
         document.getElementById('form-login').addEventListener('submit', function(e) {
             e.preventDefault();
-            const idDigitado = document.getElementById('login-id').value;
+            const idDigitado = document.getElementById('login-id').value.replace(/\D/g, "");
             const senhaDigitada = document.getElementById('login-senha').value;
+            const emailFake = idDigitado + "@erpmei.com";
+            
+            auth.signInWithEmailAndPassword(emailFake, senhaDigitada)
+                .catch((error) => { 
+                    console.error("Erro na autenticação:", error);
+                    alert('Dados de acesso incorretos ou erro de conexão.'); 
+                });
+        });
 
-            if (dadosEmpresa && dadosEmpresa.documento === idDigitado && dadosEmpresa.senha === senhaDigitada) {
-                sincronizarPerfilForm();
-                irPara('tela-home');
+        document.getElementById('btn-logout').addEventListener('click', () => auth.signOut());
+
+        function escutarDadosNuvem(uid) {
+            db.ref('usuarios/' + uid + '/perfil').on('value', (snapshot) => {
+                dadosEmpresa = snapshot.val();
                 renderizarHome();
-            } else {
-                alert('Documento (CPF/CNPJ) ou Senha incorretos ou não cadastrados.');
+                renderizarLogosGlobais();
+                verificarDirecionamentoInicial();
+            }, (error) => {
+                console.error("Erro Perfil:", error);
+            });
+            
+            db.ref('usuarios/' + uid + '/produtos').on('value', (snapshot) => {
+                const data = snapshot.val();
+                produtos = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+                atualizarDropdownProdutos();
+                renderizarEstoque();
+                verificarDirecionamentoInicial();
+            }, (error) => {
+                console.error("Erro Estoque:", error);
+            });
+            
+            db.ref('usuarios/' + uid + '/transacoes').on('value', (snapshot) => {
+                const data = snapshot.val();
+                transacoes = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse() : [];
+                renderizarFinancas();
+                verificarDirecionamentoInicial();
+            }, (error) => {
+                console.error("Erro Financeiro:", error);
+            });
+        }
+
+        function verificarDirecionamentoInicial() {
+            if (!primeiroDirecionamentoRealizado && dadosEmpresa) {
+                primeiroDirecionamentoRealizado = true;
+                irPara('tela-home');
+                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('ativo'));
+                const btnHome = document.querySelector('[data-tela="tela-home"]');
+                if(btnHome) btnHome.classList.add('ativo');
+            }
+        }
+
+        document.getElementById('perf-logo-file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                if(file.size > 800000) { 
+                    alert("Por favor, selecione uma imagem mais leve (menor que 800KB) para não estourar a memória.");
+                    this.value = "";
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    base64LogoCarregada = evt.target.result;
+                    document.getElementById('label-arquivo-status').innerText = "✅ Imagem Carregada!";
+                    document.getElementById('label-arquivo-status').style.background = "#e6f4ea";
+                    document.getElementById('label-arquivo-status').style.borderColor = "#34a853";
+                    document.getElementById('label-arquivo-status').style.color = "#137333";
+                };
+                reader.readAsDataURL(file);
             }
         });
 
-        function fazerLogout() {
-            irPara('tela-login');
-            document.getElementById('form-login').reset();
+        function renderizarLogosGlobais() {
+            if(!dadosEmpresa) return;
+            const imgData = dadosEmpresa.logoUrl || "";
+            const boxHomeLogo = document.getElementById('home-loja-logo');
+            const boxRealCartaoLogo = document.getElementById('cartao-real-logo');
+
+            if(imgData !== "") {
+                const imgTag = `<img src="${imgData}" alt="Logo">`;
+                boxHomeLogo.innerHTML = imgTag;
+                boxRealCartaoLogo.innerHTML = imgTag;
+            } else {
+                boxHomeLogo.innerHTML = "🏬";
+                boxRealCartaoLogo.innerHTML = "🏬";
+            }
         }
 
-        // --- GERENCIAMENTO DE ESTOQUE ATUALIZADO (EVITA DUPLICIDADE E INCLUI QUANTIDADE) ---
+        function renderizarHome() {
+            document.getElementById('home-loja-nome').innerText = dadosEmpresa ? dadosEmpresa.nome : "Painel MEI";
+            alternarCamposOp();
+        }
+
         document.getElementById('form-estoque').addEventListener('submit', function(e) {
             e.preventDefault();
-            const nomeDigitado = document.getElementById('est-nome').value.trim();
-            const custoDigitado = parseFloat(document.getElementById('est-custo').value);
-            const vendaDigitado = parseFloat(document.getElementById('est-venda').value);
-            const qtdDigitada = parseInt(document.getElementById('est-qtd').value) || 1;
+            const nomeProd = document.getElementById('est-nome').value.trim();
+            const custoProd = parseFloat(document.getElementById('est-custo').value);
+            const vendaProd = parseFloat(document.getElementById('est-venda').value);
+            const qtdProd = parseInt(document.getElementById('est-qtd').value);
 
-            // Busca se o produto com o mesmo nome já existe no estoque (ignora maiúsculas/minúsculas)
-            const produtoExistente = produtos.find(p => p.nome.toLowerCase() === nomeDigitado.toLowerCase());
-
-            if (produtoExistente) {
-                // Se já existe, soma a nova quantidade e atualiza os custos/valores informados
-                produtoExistente.quantidade += qtdDigitada;
-                produtoExistente.custo = custoDigitado;
-                produtoExistente.venda = vendaDigitado;
-                alert(`Produto existente encontrado! Mais ${qtdDigitada} unidade(s) adicionada(s) ao saldo de "${produtoExistente.nome}".`);
-            } else {
-                // Se é novo, cria um registo do zero
-                const novoProd = {
-                    id: Date.now(),
-                    nome: nomeDigitado,
-                    custo: custoDigitado,
-                    venda: vendaDigitado,
-                    quantidade: qtdDigitada
-                };
-                produtos.push(novoProd);
-                alert('Novo produto adicionado ao estoque.');
+            if(isNaN(custoProd) || isNaN(vendaProd) || isNaN(qtdProd)) {
+                alert("Valores numéricos inválidos nos campos de custo, venda ou quantidade.");
+                return;
             }
 
-            localStorage.setItem('erp_mei_produtos', JSON.stringify(produtos));
-            this.reset();
-            document.getElementById('est-qtd').value = "1"; // reseta valor padrão
-            renderizarEstoque();
+            db.ref('usuarios/' + auth.currentUser.uid + '/produtos').push({
+                nome: nomeProd,
+                custo: custoProd,
+                venda: vendaProd,
+                whitespace: " ",
+                quantidade: qtdProd
+            })
+            .then(() => {
+                document.getElementById('form-estoque').reset();
+                document.getElementById('est-qtd').value = "1";
+            })
+            .catch((err) => {
+                alert("Falha de rede ao salvar item no estoque: " + err.message);
+            });
         });
 
         function renderizarEstoque() {
             const container = document.getElementById('lista-produtos-container');
             container.innerHTML = '';
-
             if (produtos.length === 0) {
-                container.innerHTML = `<p style="font-size:0.85rem; color:var(--texto-s); text-align:center;">Nenhum produto cadastrado.</p>`;
+                container.innerHTML = '<p style="font-size:0.85rem; color:var(--texto-s); text-align:center; padding:15px;">Sem itens no estoque.</p>';
                 return;
             }
-
             produtos.forEach(prod => {
                 const div = document.createElement('div');
                 div.className = 'item-lista';
                 div.innerHTML = `
-                    <div style="flex: 1; padding-right: 10px;">
-                        <strong>${prod.nome}</strong><br>
-                        <span style="font-size:0.75rem; color:var(--texto-s)">Custo: R$ ${prod.custo.toFixed(2)} | Venda: R$ ${prod.venda.toFixed(2)}</span>
+                    <div style="flex:1;">
+                        <strong style="color:var(--texto-p);">${prod.nome}</strong><br>
+                        <span style="font-size:0.75rem; color:var(--texto-s);">Custo: R$ ${prod.custo.toFixed(2)} | Venda: R$ ${prod.venda.toFixed(2)}</span>
                     </div>
-                    <div style="display: flex; align-items: center;">
+                    <div style="display:flex; align-items:center; gap:8px;">
                         <div class="controle-qtd">
-                            <button class="btn-qtd" onclick="alterarQtdManual(${prod.id}, -1)">-</button>
-                            <span style="font-size: 0.9rem; font-weight: 600; min-width: 20px; text-align: center;">${prod.quantidade}</span>
-                            <button class="btn-qtd" onclick="alterarQtdManual(${prod.id}, 1)">+</button>
+                            <button class="btn-qtd" data-id="${prod.id}" data-delta="-1">-</button>
+                            <span style="font-size:0.9rem; font-weight:700;">${prod.quantidade}</span>
+                            <button class="btn-qtd" data-id="${prod.id}" data-delta="1">+</button>
                         </div>
-                        <button class="btn-lixeira" onclick="excluirProduto(${prod.id})">🗑️</button>
+                        <button class="btn-lixeira" data-id="${prod.id}">🗑️</button>
                     </div>
                 `;
                 container.appendChild(div);
             });
+            container.querySelectorAll('.btn-qtd').forEach(b => b.addEventListener('click', function() {
+                const p = produtos.find(item => item.id === this.getAttribute('data-id'));
+                if(p) {
+                    db.ref('usuarios/' + auth.currentUser.uid + '/produtos/' + p.id)
+                      .update({ quantidade: Math.max(0, p.quantidade + parseInt(this.getAttribute('data-delta'))) })
+                      .catch(err => alert("Erro ao atualizar quantidade: " + err.message));
+                }
+            }));
+            container.querySelectorAll('.btn-lixeira').forEach(b => b.addEventListener('click', function() {
+                if(confirm('Apagar item permanentemente do estoque?')) {
+                    db.ref('usuarios/' + auth.currentUser.uid + '/produtos/' + this.getAttribute('data-id'))
+                      .remove()
+                      .catch(err => alert("Erro ao remover produto: " + err.message));
+                }
+            }));
         }
 
-        window.alterarQtdManual = function(id, delta) {
-            const prod = produtos.find(p => p.id === id);
-            if (prod) {
-                prod.quantidade += delta;
-                if (prod.quantidade < 0) prod.quantidade = 0; // não permite saldo negativo por botões rápidos
-                localStorage.setItem('erp_mei_produtos', JSON.stringify(produtos));
-                renderizarEstoque();
+        document.getElementById('fin-filtro-periodo').addEventListener('change', function() {
+            const cGrid = document.getElementById('fin-datas-customizadas');
+            cGrid.style.display = this.value === 'custom' ? 'grid' : 'none';
+            renderizarFinancas();
+        });
+
+        function obterObjetoData(transacao) {
+            if (transacao.timestamp) return new Date(transacao.timestamp);
+            if (transacao.data) {
+                const partes = transacao.data.split('/');
+                if (partes.length === 3) {
+                    return new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]), 0, 0, 0);
+                }
             }
+            return new Date();
         }
 
-        window.excluirProduto = function(id) {
-            if(confirm('Tem certeza que deseja apagar este produto do estoque?')) {
-                produtos = produtos.filter(p => p.id !== id);
-                localStorage.setItem('erp_mei_produtos', JSON.stringify(produtos));
-                renderizarEstoque();
+        function renderizarFinancas() {
+            let ent = 0, sai = 0, luc = 0;
+            const container = document.getElementById('extrato-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const filtroSelecionado = document.getElementById('fin-filtro-periodo').value;
+            const hoje = new Date();
+            hoje.setHours(0,0,0,0);
+            
+            let limiteInicio = null;
+            let limiteFim = null;
+            
+            if (filtroSelecionado === 'hoje') {
+                limiteInicio = new Date(hoje);
+            } else if (filtroSelecionado === '7dias') {
+                limiteInicio = new Date(hoje);
+                limiteInicio.setDate(limiteInicio.getDate() - 7);
+            } else if (filtroSelecionado === '30dias') {
+                limiteInicio = new Date(hoje);
+                limiteInicio.setDate(limiteInicio.getDate() - 30);
             }
-        }
 
-        window.alternarCamposOp = function() {
-            const tipo = document.getElementById('op-tipo').value;
-            const grupoProd = document.getElementById('grupo-op-produto');
-            const grupoDesc = document.getElementById('grupo-op-descricao');
-            const labelValor = document.getElementById('label-op-valor');
+            transacoes.forEach(t => {
+                const dataTransacao = obterObjetoData(t);
+                if (limiteInicio && dataTransacao < limiteInicio) return;
 
-            if(tipo === 'venda') {
-                grupoProd.style.display = 'block';
-                grupoDesc.style.display = 'none';
-                labelValor.innerText = 'Valor Total da Venda';
-                atualizarDropdownProdutos();
-            } else {
-                grupoProd.style.display = 'none';
-                grupoDesc.style.display = 'block';
-                labelValor.innerText = 'Valor de Custo do Material';
+                const div = document.createElement('div');
+                div.className = 'item-lista';
+                let valBadge = '';
+                if(t.tipo === 'venda') {
+                    ent += t.valor; luc += (t.valor - (t.custoProducao || 0));
+                    valBadge = `<span style="color:var(--cor-sucesso); font-weight:700;">+ R$ ${t.valor.toFixed(2)}</span>`;
+                } else {
+                    sai += t.valor; luc -= t.valor;
+                    valBadge = `<span style="color:var(--cor-erro); font-weight:700;">- R$ ${t.valor.toFixed(2)}</span>`;
+                }
+                div.innerHTML = `<div><strong>${t.descricao}</strong><br><small>${t.data}</small></div>
+                                 <div style="display:flex; align-items:center; gap:12px;">${valBadge}<button class="btn-del-t" data-id="${t.id}" style="background:none; border:none; color:var(--cor-erro); cursor:pointer;">🗑️</button></div>`;
+                container.appendChild(div);
+            });
+            
+            document.getElementById('fin-entradas').innerText = 'R$ ' + ent.toFixed(2);
+            document.getElementById('fin-saidas').innerText = 'R$ ' + sai.toFixed(2);
+            document.getElementById('fin-lucro').innerText = 'R$ ' + luc.toFixed(2);
+            document.getElementById('fin-lucro').style.color = luc >= 0 ? 'var(--cor-sucesso)' : 'var(--cor-erro)';
+            
+            if (container.innerHTML === '') {
+                container.innerHTML = '<p style="font-size:0.85rem; color:var(--texto-s); text-align:center; padding:15px;">Nenhum lançamento no período.</p>';
             }
+            
+            container.querySelectorAll('.btn-del-t').forEach(b => b.addEventListener('click', function() {
+                if(confirm('Remover esta movimentação permanentemente do extrato?')) {
+                    db.ref('usuarios/' + auth.currentUser.uid + '/transacoes/' + this.getAttribute('data-id'))
+                      .remove()
+                      .catch(err => alert("Erro ao remover movimentação: " + err.message));
+                }
+            }));
         }
+
+        function toggleCamposOp() {
+            const t = document.getElementById('op-tipo').value;
+            document.getElementById('grupo-op-produto').style.display = t === 'venda' ? 'block' : 'none';
+            document.getElementById('grupo-op-descricao').style.display = t === 'venda' ? 'none' : 'block';
+        }
+        function alternarCamposOp() { toggleCamposOp(); }
+        document.getElementById('op-tipo').addEventListener('change', toggleCamposOp);
 
         function atualizarDropdownProdutos() {
-            const select = document.getElementById('op-produto-selecionado');
-            select.innerHTML = '<option value="" disabled selected>Escolha o produto...</option>';
-            
-            produtos.forEach(p => {
-                select.innerHTML += `<option value="${p.id}" data-preco="${p.venda}">${p.nome} (Qtd: ${p.quantidade})</option>`;
-            });
-
-            select.onchange = function() {
-                const opcaoOp = this.options[this.selectedIndex];
-                if (opcaoOp.getAttribute('data-preco')) {
-                    document.getElementById('op-valor').value = opcaoOp.getAttribute('data-preco');
-                }
-            };
+            const s = document.getElementById('op-produto-selecionado');
+            if(!s) return;
+            s.innerHTML = '<option value="" disabled selected>Selecione...</option>';
+            produtos.forEach(p => { s.innerHTML += `<option value="${p.id}" data-preco="${p.venda}">${p.nome}</option>`; });
         }
+
+        document.getElementById('op-produto-selecionado').addEventListener('change', function() {
+            const opt = this.options[this.selectedIndex];
+            if(opt.getAttribute('data-preco')) document.getElementById('op-valor').value = opt.getAttribute('data-preco');
+        });
 
         document.getElementById('form-operacao').addEventListener('submit', function(e) {
             e.preventDefault();
             const tipo = document.getElementById('op-tipo').value;
             const valor = parseFloat(document.getElementById('op-valor').value);
-            
-            let descricaoFinal = "";
-            let custoAssociado = 0;
+            let desc = "", cust = 0;
+
+            if (isNaN(valor)) {
+                alert("Por favor, informe um valor monetário válido.");
+                return;
+            }
 
             if (tipo === 'venda') {
-                const select = document.getElementById('op-produto-selecionado');
-                if(!select.value) { alert('Por favor, selecione um produto.'); return; }
-                const prodRef = produtos.find(p => p.id == select.value);
+                const sel = document.getElementById('op-produto-selecionado');
+                if(!sel.value) return alert('Selecione um produto cadastrado.');
+                const pRef = produtos.find(p => p.id === sel.value);
                 
-                if (prodRef.quantidade <= 0) {
-                    if(!confirm('Este produto está sem saldo em estoque. Deseja realizar a venda assim mesmo?')) {
-                        return;
-                    }
-                }
-                
-                // Abate 1 unidade do estoque automaticamente após a venda efetuada
-                prodRef.quantidade = Math.max(0, prodRef.quantidade - 1);
-                localStorage.setItem('erp_mei_produtos', JSON.stringify(produtos));
-                
-                descricaoFinal = `Venda: ${prodRef.nome}`;
-                custoAssociado = prodRef.custo; 
+                db.ref('usuarios/' + auth.currentUser.uid + '/produtos/' + pRef.id)
+                  .update({ quantidade: Math.max(0, pRef.quantidade - 1) })
+                  .catch(err => console.error("Erro interno ao abater estoque:", err));
+                  
+                desc = 'Venda: ' + pRef.nome; 
+                cust = parseFloat(pRef.custo) || 0;
             } else {
-                descricaoFinal = document.getElementById('op-descricao').value.trim() || "Compra de Materiais";
-                custoAssociado = valor; 
+                desc = document.getElementById('op-descricao').value.trim() || "Despesa Material"; 
+                cust = valor;
             }
 
-            const novaTransacao = {
-                tipo: tipo,
-                descricao: descricaoFinal,
-                valor: valor,
-                custoProducao: custoAssociado,
-                data: new Date().toLocaleDateString('pt-BR')
-            };
-
-            transacoes.unshift(novaTransacao);
-            localStorage.setItem('erp_mei_transacoes', JSON.stringify(transacoes));
-            this.reset();
-            alternarCamposOp();
-            alert('Operação financeira computada e estoque atualizado!');
+            db.ref('usuarios/' + auth.currentUser.uid + '/transacoes').push({
+                tipo: tipo, 
+                descricao: desc, 
+                valor: valor, 
+                custoProducao: cust, 
+                data: new Date().toLocaleDateString('pt-BR'), 
+                timestamp: Date.now()
+            })
+            .then(() => {
+                document.getElementById('form-operacao').reset();
+                toggleCamposOp();
+                alert('Movimentação guardada na nuvem!');
+            })
+            .catch((err) => {
+                alert("Erro ao sincronizar transação com o Firebase: " + err.message);
+            });
         });
 
-        function renderizarHome() {
-            document.getElementById('home-loja-nome').innerText = dadosEmpresa ? dadosEmpresa.nome : "Minha Loja";
-            const boxLogo = document.getElementById('home-loja-logo');
-            
-            if(dadosEmpresa && dadosEmpresa.logoUrl) {
-                boxLogo.innerHTML = `<img src="${dadosEmpresa.logoUrl}" alt="Logo">`;
-            } else {
-                boxLogo.innerHTML = "🏬";
-            }
-            alternarCamposOp();
-        }
-
-        function renderizarFinancas() {
-            let totalEntradas = 0;
-            let totalSaidas = 0;
-            let lucroLiquidoAcumulado = 0;
-
-            const container = document.getElementById('extrato-container');
-            container.innerHTML = '';
-
-            transacoes.forEach(t => {
-                const div = document.createElement('div');
-                div.className = 'item-lista';
-                
-                if(t.tipo === 'venda') {
-                    totalEntradas += t.valor;
-                    lucroLiquidoAcumulado += (t.valor - t.custoProducao);
-                    
-                    div.innerHTML = `
-                        <div><strong>${t.descricao}</strong><br><small>${t.data}</small></div>
-                        <span style="color:var(--cor-sucesso); font-weight:600;">+ R$ ${t.valor.toFixed(2)}</span>
-                    `;
-                } else {
-                    totalSaidas += t.valor;
-                    lucroLiquidoAcumulado -= t.valor;
-                    
-                    div.innerHTML = `
-                        <div><strong>${t.descricao}</strong><br><small>${t.data}</small></div>
-                        <span style="color:var(--cor-erro); font-weight:600;">- R$ ${t.valor.toFixed(2)}</span>
-                    `;
-                }
-                container.appendChild(div);
-            });
-
-            document.getElementById('fin-entradas').innerText = `R$ ${totalEntradas.toFixed(2)}`;
-            document.getElementById('fin-saidas').innerText = `R$ ${totalSaidas.toFixed(2)}`;
-            
-            const txtLucro = document.getElementById('fin-lucro');
-            txtLucro.innerText = `R$ ${lucroLiquidoAcumulado.toFixed(2)}`;
-            
-            if(lucroLiquidoAcumulado >= 0) {
-                txtLucro.className = 'lucro-positivo';
-            } else {
-                txtLucro.className = 'lucro-negativo';
-            }
-        }
-
-        function sincronizarPerfilForm() {
+        function preencherFormPerfil() {
             if(dadosEmpresa) {
-                document.getElementById('perf-nome').value = dadosEmpresa.nome;
-                document.getElementById('perf-endereco').value = dadosEmpresa.endereco === 'Não informado' ? '' : dadosEmpresa.endereco;
-                document.getElementById('perf-contato').value = dadosEmpresa.contato === 'Não informado' ? '' : dadosEmpresa.contato;
-                document.getElementById('perf-logo-url').value = dadosEmpresa.logoUrl;
+                document.getElementById('perf-nome').value = dadosEmpresa.nome || '';
+                document.getElementById('perf-endereco').value = dadosEmpresa.endereco || '';
+                document.getElementById('perf-contato').value = dadosEmpresa.contato || '';
+                document.getElementById('perf-instagram').value = dadosEmpresa.instagram || '';
+                document.getElementById('perf-contato2').value = dadosEmpresa.contato2 || '';
             }
         }
 
         document.getElementById('form-perfil').addEventListener('submit', function(e) {
             e.preventDefault();
-            if(dadosEmpresa) {
-                dadosEmpresa.nome = document.getElementById('perf-nome').value;
-                dadosEmpresa.endereco = document.getElementById('perf-endereco').value;
-                dadosEmpresa.contato = document.getElementById('perf-contato').value;
-                dadosEmpresa.logoUrl = document.getElementById('perf-logo-url').value;
-                
-                localStorage.setItem('erp_mei_perfil', JSON.stringify(dadosEmpresa));
-                alert('Dados salvos e atualizados no sistema!');
-                renderizarHome();
-            }
+            const uid = auth.currentUser.uid;
+            const urlFinalLogo = base64LogoCarregada !== "" ? base64LogoCarregada : (dadosEmpresa.logoUrl || "");
+
+            db.ref('usuarios/' + uid + '/perfil').update({
+                nome: document.getElementById('perf-nome').value.trim(),
+                endereco: document.getElementById('perf-endereco').value.trim(),
+                contato: document.getElementById('perf-contato').value.trim(),
+                instagram: document.getElementById('perf-instagram').value.trim(),
+                contato2: document.getElementById('perf-contato2').value.trim(),
+                logoUrl: urlFinalLogo
+            })
+            .then(() => {
+                alert('Perfil corporativo updated!');
+                base64LogoCarregada = ""; 
+            })
+            .catch((err) => {
+                alert("Erro ao salvar mudanças cadastrais: " + err.message);
+            });
         });
 
-        window.compartilharDados = function() {
-            if(!dadosEmpresa || dadosEmpresa.endereco === 'Não informado') {
-                alert('Por favor, preencha o seu endereço e contato no formulário acima antes de compartilhar.');
-                return;
+        document.getElementById('btn-gerar-cartao-imagem').addEventListener('click', function() {
+            if (!dadosEmpresa) return;
+
+            document.getElementById('cartao-real-nome-loja').innerText = dadosEmpresa.nome || "Minha Empresa";
+            const containerLinhas = document.getElementById('cartao-real-linhas-container');
+            containerLinhas.innerHTML = "";
+
+            const endereco = dadosEmpresa.endereco || "Não informado";
+            if(endereco !== "Não informado") {
+                containerLinhas.innerHTML += `<div class="cartao-info-linha"><span class="cartao-info-icon">📍</span><span class="cartao-info-texto">${endereco}</span></div>`;
             }
 
-            const textoCompartilhar = `🛒 *Dados de Contato - ${dadosEmpresa.nome}*\n\n📍 *Endereço:* ${dadosEmpresa.endereco}\n📞 *Contato / WhatsApp:* ${dadosEmpresa.contato}\n\n_Aguardamos o seu pedido!_`;
+            const contato = dadosEmpresa.contato || "";
+            if(contato !== "" && contato !== "Não informado") {
+                containerLinhas.innerHTML += `<div class="cartao-info-linha"><span class="cartao-info-icon">📞</span><span class="cartao-info-texto">${contato} (WhatsApp)</span></div>`;
+            }
 
-            if (navigator.share) {
+            const instagram = document.getElementById('perf-instagram').value.trim();
+            if(instagram !== "") {
+                containerLinhas.innerHTML += `<div class="cartao-info-linha"><span class="cartao-info-icon">📸</span><span class="cartao-info-texto">Instagram: ${instagram}</span></div>`;
+            }
+
+            const contato2 = document.getElementById('perf-contato2').value.trim();
+            if(contato2 !== "") {
+                containerLinhas.innerHTML += `<div class="cartao-info-linha"><span class="cartao-info-icon">🌐</span><span class="cartao-info-texto">Contato 2: ${contato2}</span></div>`;
+            }
+
+            renderizarLogosGlobais();
+
+            const targetDiv = document.getElementById('caixa-design-cartao-real');
+            document.getElementById('preview-placeholder-texto').innerText = "Montando matriz gráfica... Aguarde.";
+
+            setTimeout(() => {
+                html2canvas(targetDiv, { scale: 2, backgroundColor: null }).then(canvas => {
+                    const base64Image = canvas.toDataURL("image/png");
+                    const imgElement = document.getElementById('cartao-imagem-final-preview');
+                    imgElement.src = base64Image;
+                    imgElement.style.display = 'block';
+                    document.getElementById('preview-placeholder-texto').style.display = 'none';
+
+                    canvas.toBlob(blob => {
+                        blobImagemGlobal = blob;
+                        document.getElementById('btn-compartilhar-cartao').style.display = 'flex';
+                    }, "image/png");
+
+                    alert('🎨 Cartão de Visita em Imagem gerado com sucesso!');
+                }).catch(err => {
+                    alert("Erro ao rodar html2canvas: " + err.message);
+                });
+            }, 500);
+        });
+
+        document.getElementById('btn-compartilhar-cartao').addEventListener('click', function() {
+            if(!blobImagemGlobal) return;
+            const nomeArquivo = ((dadosEmpresa ? dadosEmpresa.nome : "cartao") + ".png").replace(/\s+/g, "_");
+            const arquivoCartao = new File([blobImagemGlobal], nomeArquivo, { type: "image/png" });
+
+            if (navigator.canShare && navigator.canShare({ files: [arquivoCartao] })) {
                 navigator.share({
-                    title: dadosEmpresa.nome,
-                    text: textoCompartilhar,
-                }).catch(console.error);
+                    files: [arquivoCartao],
+                    title: 'Cartão de Visita Oficial',
+                    text: 'Aqui estão os nossos contatos atualizados e redes sociais!'
+                }).catch((e) => console.log(e));
             } else {
-                navigator.clipboard.writeText(textoCompartilhar);
-                alert('Dados formatados copiados para a Área de Transferência! Basta colar (Ctrl+V) no WhatsApp para enviar para o cliente.');
+                alert('Seu dispositivo não suporta compartilhamento automático. Segure o dedo sobre a imagem para salvá-la na galeria.');
             }
-        }
-
-        irPara('tela-login');
+        });
     </script>
 </body>
 </html>
